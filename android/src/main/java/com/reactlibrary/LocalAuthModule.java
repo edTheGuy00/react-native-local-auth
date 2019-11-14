@@ -6,13 +6,14 @@ import android.os.Build;
 
 import androidx.fragment.app.FragmentActivity;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.WritableArray;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LocalAuthModule extends ReactContextBaseJavaModule {
@@ -45,19 +46,19 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
                 promise.reject("no_activity", "local_auth plugin requires a foreground activity");
                 return;
             }
-            ArrayList<String> biometrics = new ArrayList<String>();
+            WritableArray biometrics = Arguments.createArray();
             PackageManager packageManager = activity.getPackageManager();
             if (Build.VERSION.SDK_INT >= 23) {
                 if (packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) {
-                    biometrics.add("fingerprint");
+                    biometrics.pushString("fingerprint");
                 }
             }
             if (Build.VERSION.SDK_INT >= 29) {
                 if (packageManager.hasSystemFeature(PackageManager.FEATURE_FACE)) {
-                    biometrics.add("face");
+                    biometrics.pushString("face");
                 }
                 if (packageManager.hasSystemFeature(PackageManager.FEATURE_IRIS)) {
-                    biometrics.add("iris");
+                    biometrics.pushString("iris");
                 }
             }
             promise.resolve(biometrics);
