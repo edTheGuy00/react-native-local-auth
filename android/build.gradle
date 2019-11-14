@@ -63,6 +63,8 @@ dependencies {
     // https://github.com/facebook/react-native/blob/0.61-stable/template/android/app/build.gradle#L192
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0-alpha03'
     api 'androidx.core:core-ktx:1.1.0'
     api "androidx.biometric:biometric:1.0.0"
     api "androidx.fragment:fragment-ktx:1.2.0-rc02"
