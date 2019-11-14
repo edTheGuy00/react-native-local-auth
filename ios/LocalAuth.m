@@ -29,110 +29,65 @@ RCT_EXPORT_METHOD(getAvailableBiometrics:(RCTPromiseResolveBlock)resolve rejecte
   resolve(biometrics);
 }
 
-//#pragma mark Private Methods
-//
-//- (void)alertMessage:(NSString *)message
-//         firstButton:(NSString *)firstButton
-//            resolver:(RCTPromiseResolveBlock)resolve
-//            rejecter:(RCTPromiseRejectBlock)reject
-//    additionalButton:(NSString *)secondButton {
-//  UIAlertController *alert =
-//      [UIAlertController alertControllerWithTitle:@""
-//                                          message:message
-//                                   preferredStyle:UIAlertControllerStyleAlert];
-//
-//  UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:firstButton
-//                                                          style:UIAlertActionStyleDefault
-//                                                        handler:^(UIAlertAction *action) {
-//                                                          resolve(@NO);
-//                                                        }];
-//
-//  [alert addAction:defaultAction];
-//  if (secondButton != nil) {
-//    UIAlertAction *additionalAction = [UIAlertAction
-//        actionWithTitle:secondButton
-//                  style:UIAlertActionStyleDefault
-//                handler:^(UIAlertAction *action) {
-//                  if (UIApplicationOpenSettingsURLString != NULL) {
-//                    NSURL *url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
-//                    [[UIApplication sharedApplication] openURL:url];
-//                    resolve(@NO);
-//                  }
-//                }];
-//    [alert addAction:additionalAction];
-//  }
-//  [[UIApplication sharedApplication].delegate.window.rootViewController presentViewController:alert
-//                                                                                     animated:YES
-//                                                                                   completion:nil];
-//}
-//
-//RCT_EXPORT_METHOD(authenticateWithBiometrics: (NSString *)promptMessage resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-//    LAContext *context = [[LAContext alloc] init];
-//    NSError *authError = nil;
-//    lastCallArgs = nil;
-//    lastResult = nil;
-//    context.localizedFallbackTitle = @"";
-//
-//    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-//                             error:&authError]) {
-//      [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-//              localizedReason:arguments[@"localizedReason"]
-//                        reply:^(BOOL success, NSError *error) {
-//                          if (success) {
-//                            resolve(@YES);
-//                          } else {
-//                            switch (error.code) {
-//                              case LAErrorPasscodeNotSet:
-//                              case LAErrorTouchIDNotAvailable:
-//                              case LAErrorTouchIDNotEnrolled:
-//                              case LAErrorTouchIDLockout:
-//                                [self handleErrors:error
-//                                     flutterArguments:arguments
-//                                    withFlutterResult:result];
-//                                return;
-//                              case LAErrorSystemCancel:
-//                                if ([arguments[@"stickyAuth"] boolValue]) {
-//                                  lastCallArgs = arguments;
-//                                  lastResult = result;
-//                                  return;
-//                                }
-//                            }
-//                            resolve(@NO);
-//                          }
-//                        }];
-//    } else {
-//      [self handleErrors:authError flutterArguments:arguments withFlutterResult:result];
-//    }
-//}
-//
-//- (void)handleErrors:(NSError *)authError
-//     flutterArguments:(NSDictionary *)arguments
-//    resolver:(RCTPromiseResolveBlock)resolve
-//            rejecter:(RCTPromiseRejectBlock)reject {
-//  NSString *errorCode = @"NotAvailable";
-//  switch (authError.code) {
-//    case LAErrorPasscodeNotSet:
-//    case LAErrorTouchIDNotEnrolled:
-//      if ([arguments[@"useErrorDialogs"] boolValue]) {
-//        [self alertMessage:arguments[@"goToSettingDescriptionIOS"]
-//                 firstButton:arguments[@"okButton"]
-//               flutterResult:result
-//            additionalButton:arguments[@"goToSetting"]];
-//        return;
-//      }
-//      errorCode = authError.code == LAErrorPasscodeNotSet ? @"PasscodeNotSet" : @"NotEnrolled";
-//      break;
-//    case LAErrorTouchIDLockout:
-//      [self alertMessage:arguments[@"lockOut"]
-//               firstButton:arguments[@"okButton"]
-//             flutterResult:result
-//          additionalButton:nil];
-//      return;
-//  }
-//  result([FlutterError errorWithCode:errorCode
-//                             message:authError.localizedDescription
-//                             details:authError.domain]);
-//}
+RCT_EXPORT_METHOD(authenticateWithBiometrics:(NSString *) buttonCancel
+                  fingerPrintHint:(NSString*) fingerPrintHint
+                  title: (NSString*) title
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    LAContext *context = [[LAContext alloc] init];
+    NSError *authError = nil;
+    context.localizedFallbackTitle = @"";
+
+    if ([context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                             error:&authError]) {
+      [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+              localizedReason: title
+                        reply:^(BOOL success, NSError *error) {
+                          if (success) {
+                            resolve(@YES);
+                          } else {
+                            NSString *errorReason = @"";
+                            switch (error.code) {
+                              case LAErrorPasscodeNotSet:
+                                errorReason = @"PasscodeNotSet";
+                                break;
+                                    
+                              case LAErrorTouchIDNotAvailable:
+                                errorReason = @"TouchIDNotAvailable";
+                                break;
+                                    
+                              case LAErrorTouchIDNotEnrolled:
+                                errorReason = @"TouchIDNotEnrolled";
+                                break;
+                                    
+                              case LAErrorTouchIDLockout:
+                                errorReason = @"TouchIDLockout";
+                                break;
+                                    
+                              case LAErrorSystemCancel:
+                                errorReason = @"SystemCancel";
+                                break;
+                                    
+                              case LAErrorUserCancel:
+                                errorReason = @"UserCancel";
+                                break;
+                                    
+                              case LAErrorAuthenticationFailed:
+                                errorReason = @"AuthenticationFailed";
+                                break;
+                                    
+                                    
+                              default:
+                                errorReason = [error localizedDescription];
+                            }
+                            reject(@"error", errorReason, error);
+                          }
+                        }];
+    } else {
+        reject(@"error", authError.localizedDescription, authError);
+    }
+}
+
 
 
 @end

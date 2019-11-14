@@ -14,7 +14,8 @@ import {
   View,
   Text,
   StatusBar,
-  Button
+  Button,
+  Alert
 } from "react-native";
 
 import { Header, Colors } from "react-native/Libraries/NewAppScreen";
@@ -37,7 +38,10 @@ const App: () => React$Node = () => {
       "Scan to Proceed"
     ).then(success => {
       console.log(success);
-    });
+    }).catch((err)=>{
+      console.log(err);
+      Alert.alert('Error', err.message, [{ text: "OK"}]);
+    })
   }
   return (
     <>
