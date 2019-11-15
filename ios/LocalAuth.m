@@ -32,6 +32,7 @@ RCT_EXPORT_METHOD(getAvailableBiometrics:(RCTPromiseResolveBlock)resolve rejecte
 RCT_EXPORT_METHOD(authenticateWithBiometrics:(NSString *) buttonCancel
                   fingerPrintHint:(NSString*) fingerPrintHint
                   title: (NSString*) title
+                  touchFingerSensor: (NSString*) title
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     LAContext *context = [[LAContext alloc] init];
