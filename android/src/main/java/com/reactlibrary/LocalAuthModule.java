@@ -70,13 +70,13 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void authenticateWithBiometrics(final String buttonCancel, final String fingerPrintHint, final String title, final Promise promise) {
+    public void authenticateWithBiometrics(String buttonCancel, String fingerPrintHint, String title, String touchFingerSensor, final Promise promise) {
         if (!authInProgress.compareAndSet(false, true)) {
             promise.reject("auth_in_progress", "Authentication in progress");
             return;
         }
 
-        final Activity activity = reactContext.getCurrentActivity();
+        Activity activity = reactContext.getCurrentActivity();
         if (activity == null || activity.isFinishing()) {
             promise.reject("no_activity", "local_auth plugin requires a foreground activity");
             return;
@@ -89,42 +89,43 @@ public class LocalAuthModule extends ReactContextBaseJavaModule {
             return;
         }
 
+        final AuthenticationHelper authenticationHelper =
+                new AuthenticationHelper(
+                        (FragmentActivity) activity,
+                        true,
+                        true,
+                        buttonCancel,
+                        fingerPrintHint,
+                        title,
+                        touchFingerSensor,
+                        "Open Settings",
+                        true,
+                        new AuthenticationHelper.AuthCompletionHandler() {
+                            @Override
+                            public void onSuccess() {
+                                if (authInProgress.compareAndSet(true, false)) {
+                                    promise.resolve(true);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure() {
+                                if (authInProgress.compareAndSet(true, false)) {
+                                    promise.resolve(false);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String code, String error) {
+                                if (authInProgress.compareAndSet(true, false)) {
+                                    promise.reject(code, error);
+                                }
+                            }
+                        });
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                AuthenticationHelper authenticationHelper =
-                        new AuthenticationHelper(
-                                (FragmentActivity) activity,
-                                true,
-                                true,
-                                buttonCancel,
-                                fingerPrintHint,
-                                title,
-                                "Reason",
-                                "GO to Settings",
-                                true,
-                                new AuthenticationHelper.AuthCompletionHandler() {
-                                    @Override
-                                    public void onSuccess() {
-                                        if (authInProgress.compareAndSet(true, false)) {
-                                            promise.resolve(true);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure() {
-                                        if (authInProgress.compareAndSet(true, false)) {
-                                            promise.resolve(false);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(String code, String error) {
-                                        if (authInProgress.compareAndSet(true, false)) {
-                                            promise.reject(code, error);
-                                        }
-                                    }
-                                });
                 authenticationHelper.authenticate();
             }
         });

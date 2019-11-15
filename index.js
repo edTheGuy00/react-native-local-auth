@@ -9,12 +9,14 @@ export default {
   authenticateWithBiometrics: (
     buttonCancel: string,
     fingerprintHint: string,
-    title: string
+    title: string,
+    touchFingerSensor: string
   ) => {
     return LocalAuth.authenticateWithBiometrics(
       buttonCancel,
       fingerprintHint,
-      title
+      title,
+      touchFingerSensor
     );
   }
 };

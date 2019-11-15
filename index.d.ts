@@ -3,6 +3,7 @@ declare module "react-native-local-auth" {
   function authenticateWithBiometrics(
     buttonCancel: string,
     fingerprintHint: string,
-    title: string
+    title: string,
+    touchFingerSensor: string
   ): Promise<boolean>;
 }
