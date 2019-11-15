@@ -47,41 +47,46 @@ RCT_EXPORT_METHOD(authenticateWithBiometrics:(NSString *) buttonCancel
                           if (success) {
                             resolve(@YES);
                           } else {
+                            NSString *errorCode = @"";
                             NSString *errorReason = @"";
                             switch (error.code) {
                               case LAErrorPasscodeNotSet:
-                                errorReason = @"PasscodeNotSet";
+                                errorCode = @"PasscodeNotSet";
+                                errorReason = @"Phone not secured by PIN, pattern or password, or SIM is currently locked.";
                                 break;
                                     
                               case LAErrorTouchIDNotAvailable:
-                                errorReason = @"TouchIDNotAvailable";
+                                errorCode = @"NotAvailable";
+                                errorReason = @"Biometrics is not available on this device.";
                                 break;
                                     
                               case LAErrorTouchIDNotEnrolled:
-                                errorReason = @"TouchIDNotEnrolled";
+                                errorCode = @"NotEnrolled";
+                                errorReason = @"No Biometrics enrolled on this device.";
                                 break;
                                     
                               case LAErrorTouchIDLockout:
-                                errorReason = @"TouchIDLockout";
+                                errorCode = @"LockedOut";
+                                errorReason = @"The operation was canceled because the API is locked out due to too many attempts. This occurs after 5 failed attempts, and lasts for 30 seconds.";
                                 break;
                                     
                               case LAErrorSystemCancel:
-                                errorReason = @"SystemCancel";
-                                break;
+                                resolve(@NO);
+                                return;
                                     
                               case LAErrorUserCancel:
-                                errorReason = @"UserCancel";
-                                break;
+                                resolve(@NO);
+                                return;
                                     
                               case LAErrorAuthenticationFailed:
-                                errorReason = @"AuthenticationFailed";
-                                break;
-                                    
+                                resolve(@NO);
+                                return;
                                     
                               default:
-                                errorReason = [error localizedDescription];
+                                resolve(@NO);
+                                return;
                             }
-                            reject(@"error", errorReason, error);
+                            reject(errorCode, errorReason, error);
                           }
                         }];
     } else {
